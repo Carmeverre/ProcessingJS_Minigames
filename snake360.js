@@ -13,7 +13,7 @@ var MOVE_SPEED = 3;
 var ROTATION_SPEED = 5; // rotation speed (control response)
 var SNAKE_COLOR = color(8, 173, 2);
 var EYE_COLOR = color(0, 0, 0); // todo
-// TODO: wrap screen and edge collision modes. Current implementation: wrap screen
+// TODO: wrap screen and edge collision modes. Current implementation: edge collision
 
 
 
@@ -133,6 +133,16 @@ Snake.prototype.detectSelfCollision = function() {
     return false;
 };
 
+Snake.prototype.detectEdgeCollision = function() {
+    var head = this.segments[0];
+    var r = head.r;
+    if(head.x <= 0 + r || head.x >= width - r ||
+       head.y <= 0 + r || head.y >= height - r) {
+           return true;
+    }
+    return false;
+};
+
 
 
 
@@ -170,7 +180,7 @@ draw = function() {
 	    }
 	    playerSnake.move();
 	    playerSnake.draw();
-	    if(playerSnake.detectSelfCollision()){
+	    if(playerSnake.detectSelfCollision() || playerSnake.detectEdgeCollision()){
 	        gameOver = true;
 	        drawGameOver();
 	    }
