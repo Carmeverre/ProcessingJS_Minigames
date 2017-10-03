@@ -1,4 +1,4 @@
-/* UNFINISHED */
+/* BASICALLY FINISHED, but unpolished */
 
 /* MODE DEFINITION */
 angleMode = "degrees";
@@ -211,6 +211,15 @@ var drawFruits = function() {
     }
 };
 
+var drawResetButton = function(fruit) {
+    stroke(0, 0, 0);
+    fill(219, 255, 36);
+    rect(width-55,0,53,20);
+    fill(0, 0, 0);
+    textSize(14);
+    text("reset?", width-50,15);
+};
+
 
 
 /********************/
@@ -218,7 +227,7 @@ var drawFruits = function() {
 /********************/
 
 var gameOver = false;
-var lastFruit = millis() - 2000;
+generateFruit();
 
 draw = function() {
     if(!gameOver){ // screen will stay as it is when game ends, except for "game over" message
@@ -237,16 +246,12 @@ draw = function() {
 	    playerSnake.move();
 	    playerSnake.draw();
 	    
-	    var timeNow = millis();
-	    if(timeNow - lastFruit > 1000*3) {
-	        generateFruit();
-	        lastFruit = timeNow;
-	    }
 	    drawFruits();
 	    var collided = playerSnake.detectFruitCollision();
 	    if(collided >= 0) {
 	        playerSnake.score++;
 	        fruits.splice(collided,1);
+	        generateFruit(); // draw immediately on eating previous fruit
 	        drawFruits(); // redraw because removed fruit
 	        playerSnake.addSegment();
 	        playerSnake.draw(); // redraw because added segment
@@ -256,6 +261,16 @@ draw = function() {
 	    if(playerSnake.detectSelfCollision() || playerSnake.detectEdgeCollision()){
 	        gameOver = true;
 	        drawGameOver();
+	        drawResetButton();
 	    }
+    }
+};
+
+mouseClicked = function() {
+    if(mouseX > width-55 && mouseY < 20) {
+        playerSnake = new Snake();
+        fruits = [];
+        generateFruit();
+        gameOver = false;
     }
 };
