@@ -9,6 +9,7 @@ angleMode = "degrees";
 // adjustable parameters for difficulty
 var START_SEGMENTS = 7; // increase to skip to higher difficulty. Must be at least 1.
 var SEGMENT_SIZE = 20;
+var FRUIT_SIZE = SEGMENT_SIZE;
 var MOVE_SPEED = 3;
 var ROTATION_SPEED = 5; // rotation speed (control response)
 var SNAKE_COLOR = color(8, 173, 2);
@@ -27,12 +28,6 @@ var dirFrom2Pts = function(x1,y1,x2,y2) {
     var dx = x2-x1;
     var dy = y2-y1;
     return atan2(dy,dx);
-};
-
-var drawGameOver = function() {
-    fill(255, 0, 0);
-    textFont(createFont("monospace Bold", 12), 36); // Set Custom Font
-    text("GAME OVER!",110,190);
 };
 
 
@@ -133,6 +128,17 @@ Snake.prototype.detectSelfCollision = function() {
     return false;
 };
 
+var fruits = [];
+Snake.prototype.detectFruitCollision = function() {
+    var head = this.segments[0];
+    for(var i = 0; i < fruits.length; i++) {
+        if(head.detectCollision(fruits[i])) {
+            return i;
+        }
+    }
+    return -1;
+};
+
 Snake.prototype.detectEdgeCollision = function() {
     var head = this.segments[0];
     var r = head.r;
@@ -141,6 +147,14 @@ Snake.prototype.detectEdgeCollision = function() {
            return true;
     }
     return false;
+};
+
+Snake.prototype.addSegment = function() {
+    var tail = this.segments[this.segments.length-1];
+    var newX = tail.x; // todo: location for new segment dependent on old so it doesn't unfold weirdly?
+    var newY = tail.y;
+    var seg = new Segment(newX, newY, tail.dir);
+	this.segments.push(seg);
 };
 
 
@@ -156,6 +170,47 @@ var playerSnake = new Snake();
 
 
 
+/******************/
+/** DRAW UTILITY **/
+/******************/
+
+var drawGameOver = function() {
+    fill(255, 0, 0);
+    textFont(createFont("monospace Bold", 12), 36); // Set Custom Font
+    text("GAME OVER!",110,190);
+};
+
+var drawScore = function() {
+    fill(0, 0, 0);
+    textSize(10);
+    text("SCORE: " + playerSnake.score,10,20);
+};
+
+var fruitColors = [
+    color(255, 234, 0),
+    color(255, 0, 72),
+    color(128, 247, 49),
+    color(142, 40, 250)
+];
+var generateFruit = function() {
+    var fruitColor = fruitColors[floor(random(fruitColors.length))];
+    fruits.push({
+        color : fruitColor,
+        x : random(10, width-10),
+        y : random(10, height-10),
+        r : FRUIT_SIZE/2
+    });
+};
+var drawFruit = function(fruit) {
+    fill(fruit.color);
+    ellipse(fruit.x, fruit.y, 2*fruit.r, 2*fruit.r);
+};
+var drawFruits = function() {
+    for(var i=0; i<fruits.length; i++){
+        drawFruit(fruits[i]);
+    }
+};
+
 
 
 /********************/
@@ -163,9 +218,10 @@ var playerSnake = new Snake();
 /********************/
 
 var gameOver = false;
+var lastFruit = millis() - 2000;
 
 draw = function() {
-    if(!gameOver){
+    if(!gameOver){ // screen will stay as it is when game ends, except for "game over" message
         background(255, 255, 255);
 	    if(keyIsPressed) {
 		    if(keyCode === RIGHT) {
@@ -180,6 +236,23 @@ draw = function() {
 	    }
 	    playerSnake.move();
 	    playerSnake.draw();
+	    
+	    var timeNow = millis();
+	    if(timeNow - lastFruit > 1000*3) {
+	        generateFruit();
+	        lastFruit = timeNow;
+	    }
+	    drawFruits();
+	    var collided = playerSnake.detectFruitCollision();
+	    if(collided >= 0) {
+	        playerSnake.score++;
+	        fruits.splice(collided,1);
+	        drawFruits(); // redraw because removed fruit
+	        playerSnake.addSegment();
+	        playerSnake.draw(); // redraw because added segment
+	    }
+	    drawScore();
+	    
 	    if(playerSnake.detectSelfCollision() || playerSnake.detectEdgeCollision()){
 	        gameOver = true;
 	        drawGameOver();
