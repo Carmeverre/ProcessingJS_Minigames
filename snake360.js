@@ -7,12 +7,13 @@ angleMode = "degrees";
 
 /* PARAMETERS */
 // adjustable parameters for difficulty
-var START_SEGMENTS = 3; // increase to skip to higher difficulty. Must be at least 1.
+var START_SEGMENTS = 7; // increase to skip to higher difficulty. Must be at least 1.
 var SEGMENT_SIZE = 20;
 var MOVE_SPEED = 3;
-var ROTATION_SPEED = 3; // rotation speed (control response)
+var ROTATION_SPEED = 5; // rotation speed (control response)
 var SNAKE_COLOR = color(8, 173, 2);
 var EYE_COLOR = color(0, 0, 0); // todo
+// TODO: wrap screen and edge collision modes. Current implementation: wrap screen
 
 
 
@@ -26,6 +27,12 @@ var dirFrom2Pts = function(x1,y1,x2,y2) {
     var dx = x2-x1;
     var dy = y2-y1;
     return atan2(dy,dx);
+};
+
+var drawGameOver = function() {
+    fill(255, 0, 0);
+    textFont(createFont("monospace Bold", 12), 36); // Set Custom Font
+    text("GAME OVER!",110,190);
 };
 
 
@@ -59,6 +66,16 @@ Segment.prototype.draw = function() {
     noStroke();
 	fill(SNAKE_COLOR);
 	ellipse(this.x, this.y, SEGMENT_SIZE, SEGMENT_SIZE);
+};
+
+// obj may be segment or anything else with x,y,r properties
+Segment.prototype.detectCollision = function(obj){
+    var dx = this.x - obj.x;
+    var dy = this.y - obj.y;
+    if (sqrt(dx*dx+dy*dy) < this.r + obj.r) {
+        return true;
+    }
+    return false;
 };
 
 
@@ -106,6 +123,16 @@ Snake.prototype.draw = function() {
 	// TODO: draw eyes on the head (first) segment to indicate which direction the snake is going
 };
 
+Snake.prototype.detectSelfCollision = function() {
+    var head = this.segments[0];
+    for(var i = 1; i < this.segments.length; i++) {
+        if(head.detectCollision(this.segments[i])) {
+            return true;
+        }
+    }
+    return false;
+};
+
 
 
 
@@ -125,19 +152,27 @@ var playerSnake = new Snake();
 /** EVENT HANDLERS **/
 /********************/
 
+var gameOver = false;
+
 draw = function() {
-    background(255, 255, 255);
-	if(keyIsPressed) {
-		if(keyCode === RIGHT) {
-			// change direction of front segment
-			playerSnake.turn(ROTATION_SPEED);
-			ellipse(390,10,100,100); // DBG
-		}
-		else if(keyCode === LEFT) {
-			playerSnake.turn(-ROTATION_SPEED);
-			ellipse(10,10,100,100); // DBG
-		}
-	}
-	playerSnake.move();
-	playerSnake.draw();
+    if(!gameOver){
+        background(255, 255, 255);
+	    if(keyIsPressed) {
+		    if(keyCode === RIGHT) {
+			    // change direction of front segment
+			    playerSnake.turn(ROTATION_SPEED);
+			    //ellipse(390,10,100,100); // DBG
+		    }
+		    else if(keyCode === LEFT) {
+			    playerSnake.turn(-ROTATION_SPEED);
+			    //ellipse(10,10,100,100); // DBG
+		    }
+	    }
+	    playerSnake.move();
+	    playerSnake.draw();
+	    if(playerSnake.detectSelfCollision()){
+	        gameOver = true;
+	        drawGameOver();
+	    }
+    }
 };
