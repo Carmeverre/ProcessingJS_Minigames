@@ -48,9 +48,10 @@ var Segment = function(x,y,dir) {
 	this.r = SEGMENT_SIZE/2;
 };
 
-Segment.prototype.move = function() {
-    this.x += MOVE_SPEED * cos(this.dir);
-    this.y += MOVE_SPEED * sin(this.dir);
+Segment.prototype.move = function(distToNextSegment) {
+    var moveDist = distToNextSegment ? min(distToNextSegment - SEGMENT_SIZE, MOVE_SPEED) : MOVE_SPEED; // twice the radius reduces it to the distance between segment edges
+    this.x += moveDist * cos(this.dir);
+    this.y += moveDist * sin(this.dir);
 	ellipse(this.x, this.y, SEGMENT_SIZE, SEGMENT_SIZE);
 };
 
@@ -88,10 +89,13 @@ Snake.prototype.move = function() {
 		var segCurr = this.segments[i];
 		var segNext = this.segments[i-1];
 		this.segments[i].dir = dirFrom2Pts(segCurr.x,segCurr.y,segNext.x,segNext.y);
-
 	}
-	for(var i = 0; i < this.segments.length; i++) {
-		this.segments[i].move();
+	this.segments[0].move();
+	for(var i = 1; i < this.segments.length; i++) {
+	    var seg1 = this.segments[i];
+	    var seg2 = this.segments[i-1];
+	    var distToPrev = dist(seg1.x,seg1.y,seg2.x,seg2.y);
+		this.segments[i].move(distToPrev);
 	}
 };
 
