@@ -10,10 +10,23 @@ angleMode = "degrees";
 var START_SEGMENTS = 3; // increase to skip to higher difficulty. Must be at least 1.
 var SEGMENT_SIZE = 20;
 var MOVE_SPEED = 3;
-var ROTATION_SPEED = 5; // rotation speed (control response)
+var ROTATION_SPEED = 3; // rotation speed (control response)
 var SNAKE_COLOR = color(8, 173, 2);
+var EYE_COLOR = color(0, 0, 0); // todo
 
 
+
+
+
+/*************/
+/** UTILITY **/
+/*************/
+
+var dirFrom2Pts = function(x1,y1,x2,y2) {
+    var dx = x2-x1;
+    var dy = y2-y1;
+    return atan2(dy,dx);
+};
 
 
 
@@ -61,10 +74,6 @@ var Snake = function() {
 		var seg = new Segment(headStartX, headStartY + (i*SEGMENT_SIZE), 270); // all start directed upwards
 		this.segments.push(seg);
 	}
-	
-	//this.direction = 90; // TODO: degrees from what? Intention is to point up.
-	// TODO: have the direction tied to segment instead?
-	// The whole snake doesn't move in the same direction, it moves towards where the segment in front was before
 	this.score = 0;
 };
 
@@ -75,7 +84,11 @@ Snake.prototype.turn = function(angleDelta) {
 
 Snake.prototype.move = function() {
     for(var i = this.segments.length-1; i >= 1; i--) {
-		this.segments[i].dir = this.segments[i-1].dir;
+        // The whole snake doesn't move in the same direction, it moves towards where the segment in front was before
+		var segCurr = this.segments[i];
+		var segNext = this.segments[i-1];
+		this.segments[i].dir = dirFrom2Pts(segCurr.x,segCurr.y,segNext.x,segNext.y);
+
 	}
 	for(var i = 0; i < this.segments.length; i++) {
 		this.segments[i].move();
@@ -110,7 +123,6 @@ var playerSnake = new Snake();
 
 draw = function() {
     background(255, 255, 255);
-	// would rotate work for each segment separately? Will it just save me explicit trig calculations? meh, implement with trig, easier to debug...
 	if(keyIsPressed) {
 		if(keyCode === RIGHT) {
 			// change direction of front segment
