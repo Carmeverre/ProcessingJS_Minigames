@@ -1,21 +1,43 @@
 /* UNFINISHED */
 
+/* MODE DEFINITION */
+angleMode = "degrees";
+
+
+/* PARAMETERS */
 // adjustable parameters for difficulty
 var START_SEGMENTS = 3; // increase to skip to higher difficulty. Must be at least 1.
 var SEGMENT_SIZE = 20;
 var MOVE_SPEED = 5;
+// todo: snake color
+// todo: rotation speed (control response)
 
-var Segment = function(x,y) {
+
+
+
+
+/*************/
+/** CLASSES **/
+/*************/
+
+/* SEGMENT */
+
+var Segment = function(x,y,dir) {
 	// center:
 	this.x = x;
 	this.y = y;
 	this.r = SEGMENT_SIZE/2;
+	this.dir = dir; // direction in degrees from side
 };
 
 Segment.prototype.draw = function() {
 	fill(0,0,0/*TODO*/);
 	ellipse(this.x, this.y, SEGMENT_SIZE, SEGMENT_SIZE);
 };
+
+
+
+/* SNAKE */
 
 var Snake = function() {
 	this.segments = [];
@@ -28,7 +50,7 @@ var Snake = function() {
 		this.segments.push(seg);
 	}
 	
-	this.direction = 90; // TODO: degrees from what? Intention is to point up.
+	//this.direction = 90; // TODO: degrees from what? Intention is to point up.
 	// TODO: have the direction tied to segment instead?
 	// The whole snake doesn't move in the same direction, it moves towards where the segment in front was before
 	this.score = 0;
@@ -41,7 +63,25 @@ Snake.prototype.draw = function() {
 	// TODO: draw eyes on the head (first) segment to indicate which direction the snake is going
 };
 
+
+
+
+
+/***************/
+/** INSTANCES **/
+/***************/
+
 var playerSnake = new Snake();
+// todo-later: scenes for main screen etc.?
+
+
+
+
+
+/********************/
+/** EVENT HANDLERS **/
+/********************/
+
 
 draw = function() {
 	// +=MOVE_SPEED; // delta, should be broken into x and y, or something should be done wih rotate
