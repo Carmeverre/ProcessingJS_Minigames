@@ -4,13 +4,14 @@
 angleMode = "degrees";
 
 
+
 /* PARAMETERS */
 // adjustable parameters for difficulty
 var START_SEGMENTS = 3; // increase to skip to higher difficulty. Must be at least 1.
 var SEGMENT_SIZE = 20;
-var MOVE_SPEED = 5;
-var ROTATION_SPEED = 1; // rotation speed (control response)
-// todo: snake color
+var MOVE_SPEED = 3;
+var ROTATION_SPEED = 5; // rotation speed (control response)
+var SNAKE_COLOR = color(8, 173, 2);
 
 
 
@@ -41,7 +42,8 @@ Segment.prototype.move = function() {
 };
 
 Segment.prototype.draw = function() {
-	fill(0,0,0/*TODO*/);
+    noStroke();
+	fill(SNAKE_COLOR);
 	ellipse(this.x, this.y, SEGMENT_SIZE, SEGMENT_SIZE);
 };
 
@@ -53,10 +55,10 @@ var Snake = function() {
 	this.segments = [];
 	// initialize segments (according to START_SEGMENTS)
 	// start with tail near the middle of the lower edge of the screen, and snake extending above
-	var tailStartX = width/2;
-	var tailStartY = height - 2*SEGMENT_SIZE;
+	var headStartX = width/2;
+	var headStartY = height - 2*SEGMENT_SIZE;
 	for(var i = 0; i < START_SEGMENTS; i++) {
-		var seg = new Segment(tailStartX, tailStartY + (START_SEGMENTS*SEGMENT_SIZE), 270);
+		var seg = new Segment(headStartX, headStartY + (i*SEGMENT_SIZE), 270); // all start directed upwards
 		this.segments.push(seg);
 	}
 	
@@ -108,16 +110,16 @@ var playerSnake = new Snake();
 
 draw = function() {
     background(255, 255, 255);
-	// +=MOVE_SPEED; // delta, should be broken into x and y, or something should be done wih rotate
-	// would rotate work for each segment separately? Will it just save me explicit trig calculations?
-	// meh, implement with trig, easier to debug...
+	// would rotate work for each segment separately? Will it just save me explicit trig calculations? meh, implement with trig, easier to debug...
 	if(keyIsPressed) {
-		if(keyPressed === RIGHT) {
+		if(keyCode === RIGHT) {
 			// change direction of front segment
-			playerSnake.turn(-ROTATION_SPEED);
-		}
-		else if(keyPressed === LEFT) {
 			playerSnake.turn(ROTATION_SPEED);
+			ellipse(390,10,100,100); // DBG
+		}
+		else if(keyCode === LEFT) {
+			playerSnake.turn(-ROTATION_SPEED);
+			ellipse(10,10,100,100); // DBG
 		}
 	}
 	playerSnake.move();
