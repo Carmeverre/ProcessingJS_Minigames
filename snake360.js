@@ -67,7 +67,7 @@ Segment.prototype.draw = function() {
 Segment.prototype.detectCollision = function(obj){
     var dx = this.x - obj.x;
     var dy = this.y - obj.y;
-    if (sqrt(dx*dx+dy*dy) < this.r + obj.r) {
+    if (sqrt(dx*dx+dy*dy) < this.r + obj.r - 2) { // margin of error
         return true;
     }
     return false;
