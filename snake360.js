@@ -7,7 +7,8 @@ angleMode = "degrees";
 
 /* PARAMETERS */
 // adjustable parameters for difficulty
-var START_SEGMENTS = 7; // increase to skip to higher difficulty. Must be at least 1.
+var WRAPAROUND = true;
+var START_SEGMENTS = 3; // increase to skip to higher difficulty. Must be at least 1.
 var SEGMENT_SIZE = 20;
 var FRUIT_SIZE = SEGMENT_SIZE;
 var MOVE_SPEED = 3;
@@ -28,6 +29,18 @@ var dirFrom2Pts = function(x1,y1,x2,y2) {
     var dx = x2-x1;
     var dy = y2-y1;
     return atan2(dy,dx);
+};
+
+var wrapMod = function(n,mod){
+    return (n%mod + mod) % mod;
+};
+
+var wrappedX = function(x){
+    return wrapMod(x, width);
+};
+
+var wrappedY = function(y){
+    return wrapMod(y, height);
 };
 
 
@@ -60,13 +73,22 @@ Segment.prototype.move = function(distToNextSegment) {
 Segment.prototype.draw = function() {
     noStroke();
 	fill(SNAKE_COLOR);
-	ellipse(this.x, this.y, SEGMENT_SIZE, SEGMENT_SIZE);
+	if(WRAPAROUND){ // note: adjusting it here instead of in move so that angles between segments don't get messed up.
+	    ellipse(wrappedX(this.x), wrappedY(this.y), SEGMENT_SIZE, SEGMENT_SIZE);
+	}
+	else{
+	    ellipse(this.x, this.y, SEGMENT_SIZE, SEGMENT_SIZE);
+	}
 };
 
 // obj may be segment or anything else with x,y,r properties
 Segment.prototype.detectCollision = function(obj){
     var dx = this.x - obj.x;
     var dy = this.y - obj.y;
+    if(WRAPAROUND){
+        dx = wrappedX(this.x) - wrappedX(obj.x);
+        dy = wrappedY(this.y) - wrappedY(obj.y);
+    }
     if (sqrt(dx*dx+dy*dy) < this.r + obj.r - 2) { // margin of error
         return true;
     }
@@ -140,6 +162,10 @@ Snake.prototype.detectFruitCollision = function() {
 };
 
 Snake.prototype.detectEdgeCollision = function() {
+    if(WRAPAROUND)
+    {
+        return false;
+    }
     var head = this.segments[0];
     var r = head.r;
     if(head.x <= 0 + r || head.x >= width - r ||
