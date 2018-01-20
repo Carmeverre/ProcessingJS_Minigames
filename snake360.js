@@ -13,8 +13,9 @@ var SEGMENT_SIZE = 20;
 var FRUIT_SIZE = SEGMENT_SIZE;
 var MOVE_SPEED = 3;
 var ROTATION_SPEED = 5; // rotation speed (control response)
-var SNAKE_COLOR = color(8, 173, 2);
+var SNAKE_COLOR_DEFAULT = color(8, 173, 2);
 var EYE_COLOR = color(0, 0, 0); // todo
+var CHANGE_COLOR = true;
 // TODO: wrap screen and edge collision modes. Current implementation: edge collision
 
 
@@ -42,6 +43,8 @@ var wrappedX = function(x){
 var wrappedY = function(y){
     return wrapMod(y, height);
 };
+
+var snakeColor = SNAKE_COLOR_DEFAULT;
 
 
 
@@ -72,7 +75,7 @@ Segment.prototype.move = function(distToNextSegment) {
 
 Segment.prototype.draw = function() {
     noStroke();
-	fill(SNAKE_COLOR);
+	fill(snakeColor);
 	if(WRAPAROUND){ // note: adjusting it here instead of in move so that angles between segments don't get messed up.
 	    ellipse(wrappedX(this.x), wrappedY(this.y), SEGMENT_SIZE, SEGMENT_SIZE);
 	}
@@ -276,6 +279,9 @@ draw = function() {
 	    var collided = playerSnake.detectFruitCollision();
 	    if(collided >= 0) {
 	        playerSnake.score++;
+	        if (CHANGE_COLOR) {
+	            snakeColor = fruits[collided].color;
+	        }
 	        fruits.splice(collided,1);
 	        generateFruit(); // draw immediately on eating previous fruit
 	        drawFruits(); // redraw because removed fruit
@@ -293,8 +299,9 @@ draw = function() {
 };
 
 mouseClicked = function() {
-    if(mouseX > width-55 && mouseY < 20) {
+    if(mouseX > width-55 && mouseY < 20) { // reset
         playerSnake = new Snake();
+        snakeColor = SNAKE_COLOR_DEFAULT;
         fruits = [];
         generateFruit();
         gameOver = false;
