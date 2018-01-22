@@ -44,6 +44,17 @@ var wrappedY = function(y){
     return wrapMod(y, height);
 };
 
+var drawSegment = function(x,y,r,color,drawEyes) {
+    noStroke();
+	fill(color);
+    ellipse(x, y, r, r);
+    if (drawEyes) {
+        fill(0, 0, 0); // eye color
+        ellipse(x-r/4, y-r/6, r/4, r/4);
+        ellipse(x+r/4, y-r/6, r/4, r/4);
+    }
+};
+
 var snakeColor = SNAKE_COLOR_DEFAULT;
 
 
@@ -73,14 +84,12 @@ Segment.prototype.move = function(distToNextSegment) {
 	ellipse(this.x, this.y, SEGMENT_SIZE, SEGMENT_SIZE);
 };
 
-Segment.prototype.draw = function() {
-    noStroke();
-	fill(snakeColor);
+Segment.prototype.draw = function(isHead) {
 	if(WRAPAROUND){ // note: adjusting it here instead of in move so that angles between segments don't get messed up.
-	    ellipse(wrappedX(this.x), wrappedY(this.y), SEGMENT_SIZE, SEGMENT_SIZE);
+	    drawSegment(wrappedX(this.x), wrappedY(this.y), SEGMENT_SIZE, snakeColor, isHead);
 	}
 	else{
-	    ellipse(this.x, this.y, SEGMENT_SIZE, SEGMENT_SIZE);
+	    drawSegment(this.x, this.y, SEGMENT_SIZE, snakeColor, isHead);
 	}
 };
 
@@ -137,8 +146,9 @@ Snake.prototype.move = function() {
 };
 
 Snake.prototype.draw = function() {
-	for(var i = 0; i < this.segments.length; i++) {
-		this.segments[i].draw();
+    this.segments[0].draw(true); // draw head
+	for(var i = 1; i < this.segments.length; i++) {
+		this.segments[i].draw(); // draw other segments
 	}
 	// TODO: draw eyes on the head (first) segment to indicate which direction the snake is going
 };
